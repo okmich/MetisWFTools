@@ -1,0 +1,2 @@
+echo spark-submit --master local[*] --class com.absa.utility.dqtool.App /bigdata/datalake/cheq/app/lib/quick-tools/jars/dq-tool-0.0.1-SNAPSHOT.jar -zkquorum:22.148.17.1,22.148.17.2,22.148.17.3 -zkclientport:2181 "$@"
+spark-submit --master local[*] --class com.absa.utility.dqtool.App /bigdata/datalake/cheq/app/lib/quick-tools/jars/dq-tool-0.0.1-SNAPSHOT.jar -zkquorum:22.148.17.1,22.148.17.2,22.148.17.3 -zkclientport:2181 "$@"

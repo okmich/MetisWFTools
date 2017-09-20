@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html
+    xmlns="http://www.w3.org/1999/xhtml" 
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorator="template">
+    <head>
+        <style>
+
+            .form-signin {
+                max-width: 330px;
+                padding: 15px;
+                margin: 40px auto;
+            }
+
+            .form-signin .form-signin-heading,
+            .form-signin .checkbox {
+                margin-bottom: 10px;
+            }
+            .form-signin .form-control {
+                position: relative;
+                height: auto;
+                -webkit-box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                box-sizing: border-box;
+                padding: 10px;
+                font-size: 16px;
+            }
+            .form-signin .form-control:focus {
+                z-index: 2;
+            }
+            .form-signin input[type="text"] {
+                margin-bottom: -1px;
+                border-bottom-right-radius: 0;
+                border-bottom-left-radius: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <section layout:fragment="content" >
+            <div class="container" ng-app="dqApp" ng-controller="dqIdxCtnrller">
+
+                <form action="#" th:action="@{/}" class="form-signin" method="POST" th:object="${formModel}">
+                    <h3 class="form-signin-heading">Select file</h3>
+                    <select class="form-group form-control" ng-model="product" ng-change="onChangeProduct();">
+                        <option value="">-- Product --</option>
+                        <option ng-repeat="opt in products" value="{{opt}}">{{opt}}</option>
+                    </select>
+                    <select class="form-group form-control" ng-model="file" ng-change="onChangeFile();">
+                        <option value="">-- File --</option>
+                        <option ng-repeat="fn in fileNames" value="{{fn}}">{{fn}}</option>
+                    </select>
+                    <input type="text" id="fileName" class="form-control" placeholder="File name here" 
+                           required="true" autofocus="true" th:field="*{fileName}" ng-model="file" style="display: none;"/>
+                    <br />
+                    <button class="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
+                </form>
+
+            </div> <!-- /container -->
+            <script src="/dist/js/nglib/angular.min.js"></script>
+            <script src="/dist/js/audit_service.js"></script>
+            <script src="/dist/js/home.js"></script>
+        </section>
+    </body>
+</html>

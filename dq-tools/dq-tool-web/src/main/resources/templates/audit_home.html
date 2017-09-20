@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html
+    xmlns="http://www.w3.org/1999/xhtml" 
+    xmlns:th="http://www.thymeleaf.org"
+    layout:decorator="template">
+    <head>
+    </head>
+    <body>
+        <section layout:fragment="content">
+            <div class="container-fluid ng-cloak" style="margin-top: 50px; min-height: 200px;" ng-app="dqApp" ng-controller="dqCtnrller">
+                <h2 style="margin-top: 5px;" th:text="${fileName}" class="text-center"></h2>
+                <hr style="background-color: #008080; border-color: #008080;opacity: 0.1"/>
+                <div class="row">
+                    <div class="col-md-2" style="border-right: 1px solid #CCC;">
+                        <h3>
+                            Available Date 
+                            <span style="font-size:small"><a href="/index"><span class="glyphicon glyphicon-home" /> home</a></span>
+                        </h3>
+                        <input type="hidden" th:value="${fileName}" id="fileName"/>
+                        <input type="hidden" th:value="${dates}" id="dates"/>
+                        <hr class="alert-success" />
+                        <ul>
+                            <li ng-repeat="d in dates">
+                                <a href="#" ng-bind="d" ng-click='onDateClick(d);'></a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-10">
+                        <h3 class="text-center" style="margin-top: 200px;" ng-show="loading === -1">
+                            Click on the available dates to the right to see the audit files for that date
+                        </h3>
+                        <h3 class="text-center" style="margin-top: 200px;" ng-show="loading === 0">
+                            Loading...
+                        </h3>
+                        <div class="container-fluid" ng-show="loading === 1">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="alert alert-warning" ng-if="diffFile">
+                                        <h5 class="text-center"> 
+                                            <span class="glyphicon glyphicon-warning-sign" style="font-size: 28px;"></span>  The name of the file in the control file ({{cntrlFileName}}) is not {{fileName}}. Are you using a different control file for development?
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table width="400" style="margin-bottom: 15px; font-size: large;">
+                                        <tr>
+                                            <td>File name check</td>
+                                            <td>
+                                                <span class="glyphicon glyphicon-ok success" ng-if="results[0]"></span>
+                                                <span class="glyphicon glyphicon-remove failure" ng-if="!results[0]"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>File date check</td>
+                                            <td>
+                                                <span class="glyphicon glyphicon-ok success" ng-if="results[1]"></span>
+                                                <span class="glyphicon glyphicon-remove failure" ng-if="!results[1]"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Record count check</td>
+                                            <td>
+                                                <span class="glyphicon glyphicon-ok success" ng-if="results[2]"></span>
+                                                <span class="glyphicon glyphicon-remove failure" ng-if="!results[2]"></span>
+                                            </td>
+                                        </tr>
+                                        <tr ng-if="badRecs.length !== 0">
+                                            <td>Rejected records</td>
+                                            <td style="font-size: smaller;"> 
+                                                <a href="#" data-toggle="modal" data-target="#myModal"><span>see more <i class="glyphicon glyphicon-eye-open"></i></span></a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table width="400" style="margin-bottom: 15px; font-size: large;">
+                                        <tr>
+                                            <td>Hash total 1 (Ctrl. vs. Pub.) </td>
+                                            <td>
+                                                <span class="glyphicon glyphicon-ok success" ng-if="results[3] === 'OK'"></span>
+                                                <span class="glyphicon glyphicon-remove failure" ng-if="results[3] === 'NOT'"></span>
+                                                <span class="glyphicon glyphicon-minus-sign na" ng-if="results[3] === 'NA'"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Hash total 1 (Aud. vs. Pub.)</td>
+                                            <td>
+                                                <span class="glyphicon glyphicon-ok success" ng-if="results[4] === 'OK'"></span>
+                                                <span class="glyphicon glyphicon-remove failure" ng-if="results[4] === 'NOT'"></span>
+                                                <span class="glyphicon glyphicon-minus-sign na" ng-if="results[4] === 'NA'"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Hash total 2 (Ctrl. vs. Pub.)</td>
+                                            <td>
+                                                <span class="glyphicon glyphicon-ok success" ng-if="results[5] === 'OK'"></span>
+                                                <span class="glyphicon glyphicon-remove failure" ng-if="results[5] === 'NOT'"></span>
+                                                <span class="glyphicon glyphicon-minus-sign na" ng-if="results[5] === 'NA'"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Hash total 2 (Aud. vs. Pub.)</td>
+                                            <td>
+                                                <span class="glyphicon glyphicon-ok success" ng-if="results[6] === 'OK'"></span>
+                                                <span class="glyphicon glyphicon-remove failure" ng-if="results[6] === 'NOT'"></span>
+                                                <span class="glyphicon glyphicon-minus-sign na" ng-if="results[6] === 'NA'"></span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 report-table">
+                                    <h4 class="content-header">Raw Audit file</h4>
+                                    <div style="width: 100%; overflow-x: scroll">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>AUDIT_FILENAME</th>
+                                                    <th>AUDIT_DATE</th>
+                                                    <th>AUDIT_REC_CNT</th>
+                                                    <th>AUDIT_HASHTOT1</th>
+                                                    <th>AUDIT_HASHTOT2</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="a in audit">
+                                                    <td ng-bind="a.AUDIT_FILENAME"></td>
+                                                    <td ng-bind="a.AUDIT_DATE">Doe</td>
+                                                    <td ng-bind="a.AUDIT_REC_CNT">john@example.com</td>
+                                                    <td ng-bind="a.AUDIT_HASHTOT1"></td>
+                                                    <td ng-bind="a.AUDIT_HASHTOT2"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h4 class="content-header">Raw Control file</h4>
+                                    <div style="width: 100%; overflow-x: scroll">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>CNTL_FILENAME</th>
+                                                    <th>CNTL_DATE</th>
+                                                    <th>CNTL_REC_CNT</th>
+                                                    <th>CNTL_HASHTOT1</th>
+                                                    <th>CNTL_HASHTOT2</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="c in control">
+                                                    <td ng-bind="c.CNTL_FILENAME"></td>
+                                                    <td ng-bind="c.CNTL_DATE"></td>
+                                                    <td ng-bind="c.CNTL_REC_CNT"></td>
+                                                    <td ng-bind="c.CNTL_HASHTOT1"></td>
+                                                    <td ng-bind="c.CNTL_HASHTOT2"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 report-table">
+                                    <h4 class="content-header">Raw Info file</h4>
+                                    <div style="width: 100%; overflow-x: scroll">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>AUDIT_FILENAME</th>
+                                                    <th>AUDIT_DATE</th>
+                                                    <th>CNTL_REC_CNT</th>
+                                                    <th>CNTL_HASHTOT1</th>
+                                                    <th>CNTL_HASHTOT2</th>
+                                                    <th>AUDIT_REC_CNT</th>
+                                                    <th>AUDIT_HASHTOT1</th>
+                                                    <th>AUDIT_HASHTOT2</th>
+                                                    <th>HISTORY_TYPE</th>
+                                                    <th>WORKFLOW_NAME</th>
+                                                    <th>DATA_OWNER</th>
+                                                    <th>COUNTRY</th>
+                                                    <th>CURRENCY</th>
+                                                    <th>SERVICE_NOW_APPLICATION</th>
+                                                    <th>DATE_PROCESS_START</th>
+                                                    <th>DATE_PROCESS_END</th>
+                                                    <th>SOURCE_TYPE</th>
+                                                    <th>VERSION</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="r in rawInfo">
+                                                    <td ng-bind="r.AUDIT_FILENAME"></td>
+                                                    <td ng-bind="r.AUDIT_DATE"></td>
+                                                    <td ng-bind="r.CNTL_REC_CNT"></td>
+                                                    <td ng-bind="r.CNTL_HASHTOT1"></td>
+                                                    <td ng-bind="r.CNTL_HASHTOT2"></td>
+                                                    <td ng-bind="r.AUDIT_REC_CNT"></td>
+                                                    <td ng-bind="r.AUDIT_HASHTOT1"></td>
+                                                    <td ng-bind="r.AUDIT_HASHTOT2"></td>
+                                                    <td ng-bind="r.HISTORY_TYPE"></td>
+                                                    <td ng-bind="r.WORKFLOW_NAME"></td>
+                                                    <td ng-bind="r.DATA_OWNER"></td>
+                                                    <td ng-bind="r.COUNTRY"></td>
+                                                    <td ng-bind="r.CURRENCY"></td>
+                                                    <td ng-bind="r.SERVICE_NOW_APPLICATION"></td>
+                                                    <td ng-bind="r.DATE_PROCESS_START"></td>
+                                                    <td ng-bind="r.DATE_PROCESS_END"></td>
+                                                    <td ng-bind="r.SOURCE_TYPE"></td>
+                                                    <td ng-bind="r.VERSION"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 report-table"> 
+                                    <h4 class="content-header">Published Info file</h4>
+                                    <div style="width: 100%; overflow-x: scroll">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>PUB_FILENAME</th>
+                                                    <th>PUB_AUDIT_DATE</th>
+                                                    <th>PUB_ATTR_CNT</th>
+                                                    <th>PUB_REC_CNT</th>
+                                                    <th>PUB_HASHTOT1</th>
+                                                    <th>PUB_HASHTOT2</th>
+                                                    <th>WORKFLOW_NAME</th>
+                                                    <th>DATA_OWNER</th>
+                                                    <th>COUNTRY</th>
+                                                    <th>CURRENCY</th>
+                                                    <th>SERVICE_NOW_APPLICATION</th>
+                                                    <th>DATE_PROCESS_START</th>
+                                                    <th>DATE_PROCESS_END</th>
+                                                    <th>SOURCE_TYPE</th>
+                                                    <th>VERSION</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="p in pubInfo">
+                                                    <td ng-bind="p.PUB_FILENAME"></td>
+                                                    <td ng-bind="p.PUB_AUDIT_DATE"></td>
+                                                    <td ng-bind="p.PUB_ATTR_CNT"></td>
+                                                    <td ng-bind="p.PUB_REC_CNT"></td>
+                                                    <td ng-bind="p.PUB_HASHTOT1"></td>
+                                                    <td ng-bind="p.PUB_HASHTOT2"></td>
+                                                    <td ng-bind="p.HISTORY_TYPE"></td>
+                                                    <td ng-bind="p.WORKFLOW_NAME"></td>
+                                                    <td ng-bind="p.DATA_OWNER"></td>
+                                                    <td ng-bind="p.COUNTRY"></td>
+                                                    <td ng-bind="p.CURRENCY"></td>
+                                                    <td ng-bind="p.SERVICE_NOW_APPLICATION"></td>
+                                                    <td ng-bind="p.DATE_PROCESS_START"></td>
+                                                    <td ng-bind="p.DATE_PROCESS_END"></td>
+                                                    <td ng-bind="p.SOURCE_TYPE"></td>
+                                                    <td ng-bind="p.VERSION"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="myModalLabel">Rejected records</h4>
+                            </div>
+                            <div class="modal-body">
+                                <textarea rows="6" readonly="true" style="width: 100%;" wrap="off" ng-bind="badRecs"></textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal"><i class="glyphicon glyphicon-remove"></i> Close</button>
+                                <a ng-href="{{downloadUrl}}" type="button" class="btn btn-primary">
+                                    <i class="glyphicon glyphicon-cloud-download"></i> Download
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script src="/dist/js/nglib/angular.min.js"></script>
+            <script src="/dist/js/audit_service.js"></script>
+            <script src="/dist/js/audit_home.js"></script>
+        </section>
+    </body>
+</html>
